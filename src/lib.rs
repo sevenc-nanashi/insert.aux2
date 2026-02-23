@@ -1,8 +1,4 @@
-use aviutl2::{anyhow, log};
-
-fn tr(text: &str) -> String {
-    aviutl2::config::translate(text).unwrap_or_else(|_| text.to_string())
-}
+use aviutl2::{anyhow, log, config::translate as tr};
 
 static GLOBAL_EDIT_HANDLE: aviutl2::generic::GlobalEditHandle =
     aviutl2::generic::GlobalEditHandle::new();
