@@ -27,12 +27,12 @@ prebuild = ["cargo about generate ./about.hbs -o ./release/package.txt"]
 package_template = "./release/package.txt"
 
 [catalog]
-id = "sevenc-nanashi.filter_effect_toggle.aux2"
-name = "filter_effect_toggle.aux2"
-summary = "オブジェクトメニューにフィルタ効果とフィルタオブジェクトを切り替える機能を追加するプラグイン"
+id = "sevenc-nanashi.insert-aux2"
+name = "insert.aux2"
+summary = "「メディアを挿入」編集メニューを追加する汎用プラグイン"
 author = "Nanashi."
 type = "common"
-description = { type = "url", url = "https://raw.githubusercontent.com/sevenc-nanashi/filter_effect_toggle.aux2/main/README.md" }
-download_source = { type = "github", owner = "sevenc-nanashi", repo = "filter_effect_toggle.aux2" }
+description = { type = "url", url = "https://raw.githubusercontent.com/sevenc-nanashi/insert.aux2/main/README.md" }
+download_source = { type = "github", owner = "sevenc-nanashi", repo = "insert.aux2" }
 license = { type = "MIT", template = false, text = { type = "file", path = "./LICENSE" } }
-homepage = "https://github.com/sevenc-nanashi/filter_effect_toggle.aux2"
+homepage = "https://github.com/sevenc-nanashi/insert.aux2"
