@@ -33,7 +33,6 @@ name = "insert.aux2"
 summary = "「メディアを挿入」編集メニューを追加する汎用プラグイン"
 author = "Nanashi."
 type = "common"
-zip_name = "insert-v{version}"
 description = { type = "url", url = "https://raw.githubusercontent.com/sevenc-nanashi/insert.aux2/main/README.md" }
 download_source = { type = "github", owner = "sevenc-nanashi", repo = "insert.aux2" }
 license = { type = "MIT", template = false, text = { type = "file", path = "./LICENSE" } }
