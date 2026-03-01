@@ -7,5 +7,5 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-aviutl2 = "0.18.0"
+aviutl2 = "0.20.1"
 native-dialog = "0.9.6"

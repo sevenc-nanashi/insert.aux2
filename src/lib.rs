@@ -1,4 +1,4 @@
-use aviutl2::{anyhow, log, config::translate as tr};
+use aviutl2::{anyhow, config::translate as tr, tracing};
 
 static GLOBAL_EDIT_HANDLE: aviutl2::generic::GlobalEditHandle =
     aviutl2::generic::GlobalEditHandle::new();
@@ -8,23 +8,31 @@ struct InsertAux2;
 
 impl aviutl2::generic::GenericPlugin for InsertAux2 {
     fn new(_info: aviutl2::AviUtl2Info) -> aviutl2::AnyResult<Self> {
-        aviutl2::logger::LogBuilder::new()
-            .filter_level(if cfg!(debug_assertions) {
-                aviutl2::logger::LevelFilter::Debug
+        aviutl2::tracing_subscriber::fmt()
+            .with_max_level(if cfg!(debug_assertions) {
+                tracing::Level::DEBUG
             } else {
-                aviutl2::logger::LevelFilter::Info
+                tracing::Level::INFO
             })
+            .event_format(aviutl2::logger::AviUtl2Formatter)
+            .with_writer(aviutl2::logger::AviUtl2LogWriter)
             .init();
         Ok(Self)
+    }
+
+    fn plugin_info(&self) -> aviutl2::generic::GenericPluginTable {
+        aviutl2::generic::GenericPluginTable {
+            name: "insert.aux2".to_string(),
+            information: format!(
+                "Insert Shortcut / v{} / https://github.com/sevenc-nanashi/insert.aux2",
+                env!("CARGO_PKG_VERSION")
+            ),
+        }
     }
 
     fn register(&mut self, registry: &mut aviutl2::generic::HostAppHandle) {
         GLOBAL_EDIT_HANDLE.init(registry.create_edit_handle());
         registry.register_menus::<Self>();
-        registry.set_plugin_information(&format!(
-            "Insert Shortcut / v{} / https://github.com/sevenc-nanashi/insert.aux2",
-            env!("CARGO_PKG_VERSION")
-        ));
     }
 }
 
@@ -43,7 +51,7 @@ impl InsertAux2 {
         };
 
         let path = path.to_str().unwrap();
-        log::info!("File selected: {}", path);
+        tracing::info!("File selected: {}", path);
 
         GLOBAL_EDIT_HANDLE.call_edit_section(|edit| {
             edit.create_object_from_media_file(path, edit.info.layer, edit.info.frame, None)?;
