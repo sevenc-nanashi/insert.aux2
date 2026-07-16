@@ -299,7 +299,7 @@ dependencies = [
 
 [[package]]
 name = "insert-aux2"
-version = "0.1.7"
+version = "0.2.0"
 dependencies = [
  "aviutl2",
  "native-dialog",
