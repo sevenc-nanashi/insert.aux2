@@ -10,7 +10,7 @@ aviutl2_version = "latest"
 catalog_dependencies = ["Mr-Ojii.L-SMASH-Works"]
 
 [artifacts.English-insert-aul2]
-destination = "English.insert.aul2"
+destination = "Language/English.insert.aul2"
 source = "./i18n/English.insert.aul2"
 
 [artifacts.insert-aux2]
