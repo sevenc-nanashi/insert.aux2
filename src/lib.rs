@@ -54,7 +54,26 @@ impl InsertAux2 {
         tracing::info!("File selected: {}", path);
 
         GLOBAL_EDIT_HANDLE.call_edit_section(|edit| {
-            edit.create_object_from_media_file(path, edit.info.layer, edit.info.frame, None)?;
+            let video_length =
+                aviutl2::cache::get_video_file_info(path)?.map(|info| info.total_time);
+            let audio_length =
+                aviutl2::cache::get_audio_file_info(path)?.map(|info| info.total_time);
+
+            let length = [video_length, audio_length]
+                .into_iter()
+                .flatten()
+                .max_by(|a, b| a.partial_cmp(b).unwrap());
+            let fps = edit.info.fps;
+            let desired_frames = length.map(|length| {
+                ((length * *fps.numer() as f64) / (*fps.denom() as f64)).round() as usize
+            });
+            let next_object = edit.find_object_after(edit.info.layer, edit.info.frame)?;
+            let next_object_start = match next_object {
+                Some(obj) => edit.get_object_layer_frame(obj)?.start,
+                None => usize::MAX,
+            };
+            let frames = desired_frames.map(|f| f.min(next_object_start - edit.info.frame));
+            edit.create_object_from_media_file(path, edit.info.layer, edit.info.frame, frames)?;
 
             anyhow::Ok(())
         })??;

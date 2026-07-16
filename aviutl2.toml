@@ -7,6 +7,7 @@ version = "0.1.0"
 
 [development]
 aviutl2_version = "latest"
+catalog_dependencies = ["Mr-Ojii.L-SMASH-Works"]
 
 [artifacts.English-insert-aul2]
 destination = "English.insert.aul2"
@@ -30,11 +31,5 @@ package_information = "{name} v{version} / 「メディアを挿入」編集メ�
 
 [catalog]
 id = "sevenc-nanashi.insert-aux2"
-name = "insert.aux2"
-summary = "「メディアを挿入」編集メニューを追加する汎用プラグイン"
-author = "Nanashi."
-type = "common"
-description = { type = "url", url = "https://raw.githubusercontent.com/sevenc-nanashi/insert.aux2/main/README.md" }
-download_source = { type = "github", owner = "sevenc-nanashi", repo = "insert.aux2" }
-license = { type = "MIT", template = false, text = { type = "file", path = "./LICENSE" } }
-homepage = "https://github.com/sevenc-nanashi/insert.aux2"
+download_repo = { owner = "sevenc-nanashi", repo = "insert.aux2" }
+license_path = "./LICENSE"
