@@ -1,4 +1,8 @@
-use aviutl2::{anyhow, config::translate as tr, tracing};
+use aviutl2::{
+    anyhow::{self, Context},
+    config::translate as tr,
+    tracing,
+};
 
 static GLOBAL_EDIT_HANDLE: aviutl2::generic::GlobalEditHandle =
     aviutl2::generic::GlobalEditHandle::new();
@@ -36,23 +40,8 @@ impl aviutl2::generic::GenericPlugin for InsertAux2 {
     }
 }
 
-#[aviutl2::generic::menus]
 impl InsertAux2 {
-    #[edit(name = "insert.aux2\\メディアを挿入")]
-    fn insert(&mut self) -> anyhow::Result<()> {
-        let file = native_dialog::FileDialogBuilder::default()
-            .set_title(tr("挿入するメディアファイルを選択"))
-            .set_owner(&unsafe { GLOBAL_EDIT_HANDLE.get_host_app_window() }.unwrap())
-            .open_single_file()
-            .show()?;
-
-        let Some(path) = file else {
-            return Ok(());
-        };
-
-        let path = path.to_str().unwrap();
-        tracing::info!("File selected: {}", path);
-
+    fn insert_media(&mut self, path: &std::path::Path) -> anyhow::Result<()> {
         GLOBAL_EDIT_HANDLE.call_edit_section(|edit| {
             let video_length =
                 aviutl2::cache::get_video_file_info(path)?.map(|info| info.total_time);
@@ -79,6 +68,96 @@ impl InsertAux2 {
         })??;
 
         Ok(())
+    }
+    fn insert_object(&mut self, path: &std::path::Path) -> anyhow::Result<()> {
+        let object_file = std::fs::read_to_string(path)?;
+        let object_file: aviutl2::alias::Table = object_file.parse()?;
+        let mut first_frame = usize::MAX;
+        let mut first_layer = usize::MAX;
+        for table in object_file.iter_subtables_as_array() {
+            let layer: usize = table
+                .get_value("layer")
+                .context("layer not found")?
+                .parse()
+                .context("layer is not integer")?;
+            let frame: usize = table
+                .get_value("frame")
+                .context("frame not found")?
+                .split(",")
+                .next()
+                .context("frame is empty")?
+                .parse()
+                .context("frame is not integer")?;
+            first_layer = first_layer.min(layer);
+            first_frame = first_frame.min(frame);
+        }
+        if first_layer == usize::MAX || first_frame == usize::MAX {
+            anyhow::bail!("object file is empty");
+        }
+        let mut handles = Vec::new();
+        let edit_result = GLOBAL_EDIT_HANDLE.call_edit_section(|edit| {
+            for table in object_file.iter_subtables_as_array() {
+                let layer: usize = table
+                    .get_value("layer")
+                    .context("layer not found")?
+                    .parse()
+                    .context("layer is not integer")?;
+                let frame: usize = table
+                    .get_value("frame")
+                    .context("frame not found")?
+                    .split(",")
+                    .next()
+                    .context("frame is empty")?
+                    .parse()
+                    .context("frame is not integer")?;
+                let new_layer = layer - first_layer + edit.info.layer;
+                let new_frame = frame - first_frame + edit.info.frame;
+                let mut alias = aviutl2::alias::Table::new();
+                alias.insert_table("Object", table.clone());
+                let handle =
+                    edit.create_object_from_alias(&alias.to_string(), new_layer, new_frame, 0)?;
+                handles.push(handle);
+            }
+            anyhow::Ok(())
+        })?;
+        if handles.is_empty() {
+            anyhow::bail!("object file is empty");
+        }
+        if let Err(err) = edit_result {
+            tracing::error!("Failed to insert object file: {:?}, rolling back", err);
+            GLOBAL_EDIT_HANDLE.call_edit_section(|edit| {
+                for handle in handles {
+                    edit.delete_object(handle)?;
+                }
+                anyhow::Ok(())
+            })??;
+        }
+
+        Ok(())
+    }
+}
+
+#[aviutl2::generic::menus]
+impl InsertAux2 {
+    #[edit(name = "insert.aux2\\メディアを挿入")]
+    fn insert(&mut self) -> anyhow::Result<()> {
+        let file = native_dialog::FileDialogBuilder::default()
+            .set_title(tr("挿入するメディアファイルを選択"))
+            .set_owner(&unsafe { GLOBAL_EDIT_HANDLE.get_host_app_window() }.unwrap())
+            .open_single_file()
+            .show()?;
+
+        let Some(path) = file else {
+            return Ok(());
+        };
+
+        if path.extension().is_some_and(|ext| ext == "object") {
+            tracing::info!("Inserting object file: {:?}", path);
+            self.insert_object(&path)
+        } else {
+            tracing::info!("Inserting media file: {:?}", path);
+            self.insert_media(&path)
+        }
     }
 }
 

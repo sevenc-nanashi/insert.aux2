@@ -7,7 +7,7 @@ version = "0.1.0"
 
 [development]
 aviutl2_version = "latest"
-catalog_dependencies = ["Mr-Ojii.L-SMASH-Works"]
+catalog_dependencies = ["Mr-Ojii.L-SMASH-Works", "KuroNeko.CopyAlias"]
 
 [artifacts.English-insert-aul2]
 destination = "Language/English.insert.aul2"
